@@ -2,11 +2,77 @@
   <img src="logo/logo.svg" width="128" alt="remobi logo"/>
 </div>
 
-# remobi
+# Mobile-TUI
 
-[![CI](https://github.com/connorads/remobi/actions/workflows/ci.yml/badge.svg)](https://github.com/connorads/remobi/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/remobi)](https://www.npmjs.com/package/remobi)
+[![CI](https://github.com/AeromechIndustries/Mobile-TUI/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/AeromechIndustries/Mobile-TUI/actions/workflows/ci.yml)
+[![upstream npm](https://img.shields.io/npm/v/remobi?label=upstream%20npm)](https://www.npmjs.com/package/remobi)
 [![licence](https://img.shields.io/npm/l/remobi)](LICENSE)
+
+Aeromech Industries' mobile terminal reference and adaptation fork for
+[TessarAct](https://github.com/AeromechIndustries/TessarAct), derived from
+[Connor's remobi](https://github.com/connorads/remobi). The upstream MIT licence
+and copyright are retained in [LICENSE](LICENSE).
+
+## How we use this repository
+
+We study and reuse upstream's mobile terminal interaction code for TessarAct
+Code: software-keyboard handling, responsive sizing, touch keys, scrolling and
+gestures. The intended product is TessarAct's existing Code panel with better
+mobile interaction, not another standalone terminal service or coding agent.
+
+**Current status:** this is a reference/adaptation fork. It has not yet been
+integrated into TessarAct or accepted on an actual iPhone. The initial upstream
+baseline is [`2eb301e`](https://github.com/connorads/remobi/commit/2eb301e47e78409602cdfe60d1d59a654ee88306).
+Upstream code is a useful starting point; its tests do not establish our own
+browser, authentication or panel-lifetime acceptance.
+
+| Area to reuse or learn from | Source | TessarAct adaptation |
+|---|---|---|
+| Keyboard-aware sizing and orientation | `src/viewport/`, `src/startup-resize.ts` | Measure the Code panel; keep the rest of the app scrollable. |
+| Keyboard focus and touch handling | `src/util/keyboard.ts`, `src/util/tap.ts` | Preserve typing focus without repeatedly opening the phone keyboard. |
+| Special-key toolbar and command drawer | `src/toolbar/`, `src/drawer/`, `src/actions/` | Configure controls for Mastra Code, not stock tmux bindings. |
+| Scrolling, pinch and swipe | `src/gestures/`, `src/controls/` | Respect TUI mouse mode, selection and application navigation. |
+| Terminal appearance and safe areas | `styles/base.css`, `src/theme/` | Scope styles to the terminal, retaining touch targets and iPhone safe areas. |
+| Mobile regression coverage | `tests/playwright/`, `playwright.config.ts` | Add our mounted `/dev` journeys and real-device testing. |
+
+### Integration boundary
+
+- Native Mastra Code remains the coding controller and TUI inside the workspace
+  sandbox. This repository supplies browser interaction, not an agent loop.
+- TessarAct retains authentication, workspace access, attachment tickets,
+  provider credentials and persistent-process transport. The upstream Hono/PTY
+  server is available for standalone reference, not a replacement for that path.
+- The current overlay uses `window.term`, appends controls to `document.body`,
+  locks document height and can reload the page on reconnect. Embedding requires
+  an explicit terminal/container adapter, panel-scoped sizing and cleanup on
+  unmount. Its existing `init()` is not a drop-in React component.
+- Keep reusable upstream fixes separate from TessarAct-specific adapters. Pin
+  the reviewed source revision and retain attribution when copying or bundling
+  code. There is no predetermined percentage of code to reuse.
+
+## Fork maintenance
+
+`origin` is `AeromechIndustries/Mobile-TUI`; its default integration branch is
+`master`. `upstream` is `connorads/remobi`, whose default branch remains `main`.
+Open focused PRs against this fork's `master`; inspect upstream changes before
+merging or cherry-picking them. Do not overwrite our changes with a blind sync.
+
+Track fork work in [this repository's issues](https://github.com/AeromechIndustries/Mobile-TUI/issues).
+TessarAct integration and acceptance stay in the application repository,
+currently [issue #534](https://github.com/AeromechIndustries/TessarAct/issues/534).
+An upstream npm install installs upstream remobi, not this fork.
+
+Automatic publishing is disabled, and `package.json` is private to prevent
+publishing to upstream's `remobi` package. The existing package/import names are
+retained for source compatibility. A separately named distributable and release
+process require a deliberate later decision. CI validation remains enabled.
+
+## Upstream standalone application reference
+
+The remaining sections describe remobi's standalone operation. Its installers,
+npm packages, website and tmux defaults belong to upstream; they do not install
+or configure TessarAct Code. Use the fork development commands below when
+working on our source.
 
 **Your terminal. Everywhere.**
 
@@ -141,13 +207,16 @@ export default {
 
 `tmux-windows` is filtered out because in herdr `prefix+w` opens the workspace picker — `herdr-workspaces` re-adds the same sequence with an accurate label. For interactive onboarding, point an AI agent at the [remobi-setup skill](.agents/skills/remobi-setup/SKILL.md), which covers the herdr path.
 
-## Release channels
+## Publishing policy
 
-- `main` publishes stable releases to npm `latest`
-- `dev` publishes prereleases to npm `dev`
-- merge `dev` into `main` to promote an experimental line to stable
+This fork does not publish npm packages or automated GitHub releases. Its
+inherited semantic-release configuration names `master` and `dev`, but is
+inactive: CI has no release job and the package is private. No `dev` branch is
+required for reference/adaptation work.
 
-If an experimental change is breaking for consumers, include a `BREAKING CHANGE:` footer so semantic-release computes the right next version on both channels. `!` in the header is optional shorthand only; on its own it does not trigger a major release in this repo.
+Upstream's release channels and installation instructions are maintained in
+[its README](https://github.com/connorads/remobi#readme). Continue using
+conventional commits so reusable changes are easy to review upstream.
 
 ## Set up with AI
 
@@ -378,8 +447,11 @@ remobi follows semantic versioning. The public API is defined by the following i
 ## Development
 
 ```bash
-git clone https://github.com/connorads/remobi.git && cd remobi
-pnpm install
+git clone https://github.com/AeromechIndustries/Mobile-TUI.git
+cd Mobile-TUI
+git remote add upstream https://github.com/connorads/remobi.git
+mise install                         # use this repo's Node/pnpm/tool versions
+pnpm install --frozen-lockfile
 git config core.hooksPath .hk-hooks   # enable commit hooks (conventional commits, biome)
 ```
 
@@ -388,7 +460,7 @@ git config core.hooksPath .hk-hooks   # enable commit hooks (conventional commit
 From source (bundles the browser client on the fly via esbuild — no build step needed):
 
 ```bash
-tsx cli.ts serve              # localhost:7681, default tmux session
+pnpm exec tsx cli.ts serve    # localhost:7681, default tmux session
 ```
 
 Or build first, then run from dist/:
@@ -423,7 +495,9 @@ Those tools change your workflow. Chat relays route through third-party servers.
 remobi migrated from Bun to Node.js + pnpm for broader compatibility. It transpiles to JS via tsdown for npm distribution and uses esbuild for the browser client bundle.
 
 **Is this production-ready?**
-It's v0.1. The author uses it daily. It works. It's also early — feedback welcome, forks encouraged.
+Upstream includes unit and mobile-browser tests. This fork is not yet a shipped
+TessarAct integration; real iPhone keyboard, rotation, selection and reconnect
+acceptance remain required before claiming that experience is ready.
 
 ## Acknowledgements
 

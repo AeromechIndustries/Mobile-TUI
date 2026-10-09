@@ -2,9 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [master, dev]
   pull_request:
-    branches: [main, dev]
+    branches: [master, dev]
+
+permissions:
+  contents: read
 
 jobs:
   check:
@@ -17,7 +20,7 @@ jobs:
         run: |
           python3 --version
           node-gyp --version
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium webkit
       - run: pnpm run test:coverage
       - run: pnpm run build:dist
@@ -29,25 +32,4 @@ jobs:
       - run: pnpm run lint:publint
       - run: pnpm exec tsc --noEmit
 
-  release:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
-    needs: check
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: jdx/mise-action@v3
-      - name: Verify native build prerequisites
-        run: |
-          python3 --version
-          node-gyp --version
-      - run: pnpm install
-      - run: pnpm run release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # Fork publishing is intentionally disabled. See README.md#fork-maintenance.
