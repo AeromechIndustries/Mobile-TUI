@@ -1,5 +1,6 @@
 {
 	"name": "remobi",
+	"private": true,
 	"version": "1.2.1",
 	"description": "Monitor and control your coding agents from your phone. Touch controls for tmux over the web.",
 	"type": "module",
@@ -35,10 +36,10 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/connorads/remobi.git"
+		"url": "git+https://github.com/AeromechIndustries/Mobile-TUI.git"
 	},
-	"homepage": "https://github.com/connorads/remobi",
-	"bugs": "https://github.com/connorads/remobi/issues",
+	"homepage": "https://github.com/AeromechIndustries/Mobile-TUI#readme",
+	"bugs": "https://github.com/AeromechIndustries/Mobile-TUI/issues",
 	"scripts": {
 		"build:overlay": "tsx scripts/build-overlay.ts",
 		"build:dist": "tsdown && pnpm run build:overlay",

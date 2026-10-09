@@ -1,6 +1,16 @@
-# remobi
+# Mobile-TUI
 
-Monitor and control your coding agents from your phone. Touch controls for tmux (or [zellij](https://github.com/zellij-org/zellij), [herdr](https://github.com/ogulcancelik/herdr)) over the web. Published on npm as `remobi`.
+This is Aeromech Industries' reference/adaptation fork of Connor's remobi for
+TessarAct Code. Read README.md for the canonical fork purpose, integration
+boundary and maintenance policy. Preserve the upstream MIT notice and author.
+`origin` is AeromechIndustries/Mobile-TUI (default `master`); `upstream` is
+connorads/remobi (default `main`). Open scoped PRs against `origin/master`.
+Keep terminal runtime changes separate from repository bookkeeping, and report
+TessarAct integration or device acceptance only after verifying those targets.
+
+The retained upstream application provides mobile touch controls for tmux,
+zellij and herdr. Upstream publishes it as `remobi`; this fork is private for
+npm publishing and retains source-compatible package/import names.
 
 ## Architecture
 
@@ -56,7 +66,9 @@ Commits must follow [Conventional Commits](https://www.conventionalcommits.org/)
 - Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`, `perf`, `style`, `build`, `revert`
 - Breaking changes: include a `BREAKING CHANGE:` footer. `!` after type/scope is optional shorthand only and must be paired with the footer because semantic-release major detection relies on the footer.
 
-**Choosing the right type matters** — it controls whether semantic-release publishes to npm:
+Use the appropriate conventional commit type for review and upstream reuse.
+The release column below describes upstream classification; this fork does
+not publish packages:
 
 | Type | Release | When to use |
 |------|---------|-------------|
@@ -69,7 +81,9 @@ Commits must follow [Conventional Commits](https://www.conventionalcommits.org/)
 | `refactor` | none | Code restructuring with no behaviour change |
 | `test` | none | Adding or updating tests |
 
-**NEVER use `fix` for non-consumer-facing changes.** `fix` triggers an npm release — it means a bug fix visible to package consumers (runtime behaviour, CLI output, published types). If the change only affects CI, dev tooling, tests, or repo internals, use `ci`, `chore`, or `test` instead — even if it "fixes" something. When in doubt, ask: "would a consumer notice if this change didn't exist?" If no, it's not `fix`.
+Use `fix` for consumer-visible behavior changes. Use `ci`, `chore`, `docs` or
+`test` for repository bookkeeping and tooling. Upstream may reuse these commits
+in its release process; fork publishing remains disabled.
 
 ## Module Layout
 
@@ -119,19 +133,15 @@ CLI + build:
 - `src/release/commit-message.ts` — conventional-commit parsing (release classification, breaking-footer check)
 - `styles/base.css` — all CSS
 
-## Publishing
+## Packaging and checks
 
 - Transpiles to JS via tsdown: `bin` → `dist/cli.mjs`, `exports` → `dist/*.mjs` + `dist/*.d.mts`
 - `files` array controls what's published: `dist/`, `styles/`, `src/pwa/icons/`, `README.md`, `CHANGELOG.md`, `LICENSE`
 - CI: `.github/workflows/ci.yml` — pnpm test + biome check
-- Release: `release` job in `.github/workflows/ci.yml` — semantic-release on push to `main` and `dev`, gated on `check` job
-  - Versioning, changelog, npm publish, and GitHub Release are all automated
-  - `npx semantic-release --dry-run` for local verification
-  - Stable channel: `main` → npm `latest`
-  - Prerelease channel: `dev` → npm `dev` + GitHub prereleases
-  - Promote experimental releases by merging `dev` into `main`
-  - Release triggers: `feat:` → minor, `fix:` → patch, `BREAKING CHANGE` → major
-  - No release: `chore:`, `docs:`, `refactor:`, `test:`, `ci:`
+- CI validates pushes and PRs to `master` and `dev`.
+- Follow README.md#fork-maintenance for publishing policy. CI has no release
+  job; package.json is private. Do not run release or publish commands as part
+  of reference/adaptation work.
 - See **Local Development** above for running from source
 
 ## Conventions
@@ -144,9 +154,13 @@ CLI + build:
 - Drawer takes a flat `readonly ControlButton[]` — rendered as a single grid
 - Help overlay is config-driven and must be fail-safe (never break core controls if help fails)
 - Mobile viewport handling: lock document scroll and compute height from visual viewport (keyboard-aware)
-- Changelog and versioning are fully automated by semantic-release — do not manually edit `CHANGELOG.md`. Use conventional commit types to control releases: `feat:` → minor, `fix:` → patch, `BREAKING CHANGE` → major. Non-release types: `chore:`, `docs:`, `refactor:`, `test:`, `ci:`
+- Preserve `CHANGELOG.md` as upstream release history. Record fork changes in
+  scoped PRs; follow README.md#fork-maintenance for release policy.
 - All DOM creation in `util/dom.ts` helpers
 - Keyboard state preserved: capture `isKeyboardOpen()` before action, use `conditionalFocus()` after
 - Tests use happy-dom for DOM environment (e2e/CLI tests use node environment)
 - Agent skill: `.agents/skills/remobi-setup/SKILL.md` provides AI agents with onboarding and config guidance. When config shape, CLI commands, action types, or validation rules change, update the skill to stay in sync.
-- Agent onboarding: when helping a user set up remobi (not develop it), read `.agents/skills/remobi-setup/SKILL.md` and follow its workflow. Critical: `set -g mouse on` must be enabled in the user's tmux config for touch scroll to work — the skill covers this but agents skipping it is the most common setup failure.
+- Standalone onboarding: when helping a user set up upstream remobi (not
+  TessarAct Code), read `.agents/skills/remobi-setup/SKILL.md` and follow its
+  workflow. Enable `set -g mouse on` in the user's tmux config for touch scroll.
+  Use README.md's integration boundary for TessarAct adaptation work.

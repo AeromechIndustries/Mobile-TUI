@@ -2,6 +2,13 @@
 
 ## Reporting a vulnerability
 
+For fork-specific or TessarAct integration vulnerabilities, email
+**security@tessaract.org**. See
+[TessarAct's private reporting policy](https://github.com/AeromechIndustries/TessarAct/security/policy)
+for the information to include.
+The upstream contact and response targets below apply to remobi upstream, not
+to a separately promised Aeromech Industries response schedule.
+
 Email **security@remobi.app** with a description, reproduction steps, and impact assessment.
 
 You should receive an acknowledgement within 48 hours. We aim to release a fix within 7 days for confirmed issues.
@@ -20,7 +27,9 @@ remobi is a remote-control surface for your terminal — anyone who can reach it
 
 ## Supply chain
 
-npm packages are published via GitHub Actions with provenance attestations enabled. You can verify the build origin with:
+This fork does not publish npm packages. Upstream packages are published via
+GitHub Actions with provenance attestations enabled. You can verify an upstream
+installation's build origin with:
 
 ```bash
 npm audit signatures
